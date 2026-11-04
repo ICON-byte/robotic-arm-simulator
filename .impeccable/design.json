@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T12:03:52.318324+00:00",
+  "title": "Design System: Robotic Arm Simulator",
+  "extensions": {
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Application heading",
+        "purpose": "Native Qt application header."
+      },
+      "title": {
+        "displayName": "Section heading",
+        "purpose": "Scene, sidebar, and results headings."
+      },
+      "body": {
+        "displayName": "Widget body",
+        "purpose": "Default native widget text and buttons."
+      },
+      "label": {
+        "displayName": "Supporting guidance",
+        "purpose": "Muted descriptions and camera instructions."
+      },
+      "emphasis": {
+        "displayName": "Scope and pending heading",
+        "purpose": "Foundation marker and future section titles."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [],
+    "nativeQt": {
+      "binding": "PySide6",
+      "style": "Fusion",
+      "sourceFiles": [
+        "src/robotic_arm_simulator/ui/theme.qss",
+        "src/robotic_arm_simulator/ui/main_window.py",
+        "src/robotic_arm_simulator/ui/controls.py",
+        "src/robotic_arm_simulator/visualization/viewport.py"
+      ],
+      "units": "Qt stylesheet and layout logical pixels; renderer caption font_size is a PyVista setting.",
+      "buttonBorder": {
+        "default": "1px solid {colors.control-border}",
+        "hover": "1px solid {colors.accent}",
+        "focus": "2px solid {colors.accent}"
+      },
+      "layout": {
+        "initialWindow": [
+          1360,
+          900
+        ],
+        "minimumWindow": [
+          960,
+          680
+        ],
+        "sidebarScrollWidth": [
+          285,
+          355
+        ],
+        "sidebarChildWidth": [
+          270,
+          340
+        ],
+        "splitterCollapsible": false
+      },
+      "scrollbar": {
+        "width": 10,
+        "minimumHandleHeight": 24
+      },
+      "previewPolicy": "Native widgets are documented without HTML/CSS translations. No browser runtime or web breakpoints apply.",
+      "palettePolicy": "Frontmatter records implemented colors. No synthesized tonal ramps are used by the native application.",
+      "interaction": "Immediate Qt state feedback; no application-defined motion or shadows.",
+      "sidebarStyledBackground": true,
+      "sceneToolbarHintWordWrap": false,
+      "axisLabelColor": "{colors.scene-caption}"
+    }
+  },
+  "components": [
+    {
+      "name": "Reset view",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Native QPushButton; Ctrl+Home restores the initial perspective camera. Hover, pressed, disabled, and focus variants are in DESIGN.md."
+    },
+    {
+      "name": "Future joint row",
+      "kind": "custom",
+      "refersTo": "placeholder",
+      "description": "Explanatory QLabel; minimum height 58 logical pixels. Not an interactive input."
+    },
+    {
+      "name": "Calculation results",
+      "kind": "card",
+      "refersTo": "results",
+      "description": "Native QFrame containing a section title and explicit unavailable-calculations message."
+    },
+    {
+      "name": "Control sidebar",
+      "kind": "custom",
+      "refersTo": "sidebar",
+      "description": "Scrollable native QWidget grouping future configuration and kinematics descriptions."
+    },
+    {
+      "name": "Reference viewport",
+      "kind": "custom",
+      "refersTo": "viewport",
+      "description": "PyVistaQt interactor with reference cube, grid, axes, and immediate trackball camera interaction."
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet 3D Workspace",
+    "overview": "A professional dark desktop workspace gives the rendered scene the most space and visual attention. Native Qt widgets provide readable controls, organized supporting information, and clear status feedback. The shell stays quiet and never imitates a physical instrument panel.\n\nThis document records the implemented Phase 1 foundation, rather than future robot controls or calculations. Color and shape decisions come from the Qt stylesheet and reference viewport. The north star is a descriptive name for that existing direction, not a new identity proposal.",
+    "keyCharacteristics": [
+      "Viewport-led composition with an adjustable, scrollable sidebar.",
+      "Dark tonal surfaces, restrained mint emphasis, and readable text.",
+      "Small corner radii and immediate native interaction feedback.",
+      "Explicit explanations where later-phase functionality is unavailable."
+    ],
+    "rules": [
+      {
+        "name": "The Reserved Accent Rule",
+        "body": "Use mint emphasis for focus, actionable hover feedback, and the current scope marker; keep general shell surfaces neutral. Coordinate-axis shafts retain PyVista's conventional colors; their labels use the scene-caption token.",
+        "section": "colors"
+      },
+      {
+        "name": "The Quiet Shell Rule",
+        "body": "Convey shell structure through surface tone, spacing, and borders so the scene retains visual priority.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the viewport dominant and supporting information organized in the sidebar and results frame.",
+      "Do preserve visible keyboard focus, camera guidance, and the Reset view shortcut.",
+      "Do use explanatory text for unavailable future controls and calculations.",
+      "Do use native Qt layout behavior and the established surface and typography tokens."
+    ],
+    "donts": [
+      "Don't present placeholder rows as working inputs or show fabricated calculation values.",
+      "Don't add decorative shadows, instrument-panel ornament, or competing shell accents.",
+      "Don't treat the reference cube as a robot model or extend Phase 1 into kinematics.",
+      "Don't substitute browser layouts or web component libraries for the native Qt interface."
+    ]
+  }
+}
