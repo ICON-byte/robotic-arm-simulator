@@ -10,6 +10,7 @@ colors:
   arm-axle: "#d7e2e9"
   endpoint: "#e2b77c"
   ik-target: "#f59a87"
+  error: "#f59a87"
   canvas: "#10161d"
   scene: "#151c24"
   sidebar: "#18212b"
@@ -51,7 +52,7 @@ typography:
     fontSize: "12px"
   solution:
     fontFamily: "Segoe UI"
-    fontSize: "11px"
+    fontSize: "12px"
   emphasis:
     fontFamily: "Segoe UI"
     fontSize: "13px"
@@ -67,7 +68,6 @@ spacing:
   compact: "4px"
   results-gap: "6px"
   control-block: "8px"
-  ik-gap: "10px"
   section: "12px"
   control-inline: "14px"
   panel-inline: "16px"
@@ -113,7 +113,7 @@ components:
     backgroundColor: "{colors.button}"
   sidebar:
     backgroundColor: "{colors.sidebar}"
-    padding: "24px"
+    padding: "16px"
   slider-track:
     backgroundColor: "{colors.control-border}"
     rounded: "{rounded.slider-track}"
@@ -132,12 +132,14 @@ components:
     textColor: "{colors.text}"
     rounded: "{rounded.control}"
     padding: "6px"
+  error-message:
+    textColor: "{colors.error}"
   solution-list:
     backgroundColor: "{colors.placeholder}"
     textColor: "{colors.text}"
     typography: "{typography.solution}"
   solution-item:
-    padding: "5px"
+    padding: "4px"
   solution-item-selected:
     backgroundColor: "{colors.button-hover}"
     textColor: "{colors.text}"
@@ -170,7 +172,7 @@ components:
 
 A professional dark desktop workspace gives the rendered scene the most space and visual attention. Native Qt widgets provide readable controls, organized supporting information, and clear status feedback. The shell stays quiet and never imitates a physical instrument panel.
 
-This document records the implemented Phase 5 forward- and inverse-kinematics workspace with smooth joint-space motion. Three limited joint sliders and an explicit target calculate/select/move-or-apply workflow share one robot state, live endpoint coordinates, joint summaries, and the final tool-to-world matrix. Color and shape decisions come from the Qt stylesheet and the mechanical arm scene. The north star is a descriptive name for that existing direction, not a new identity proposal.
+This document records the implemented Phase 6 forward- and inverse-kinematics workspace with compact demonstrations, explicit input feedback, and smooth joint-space motion. Three limited joint sliders and an explicit target calculate/select/move-or-apply workflow share one robot state, live endpoint coordinates, joint summaries, and the final tool-to-world matrix. Color and shape decisions come from the Qt stylesheet and the mechanical arm scene. The north star is a descriptive name for that existing direction, not a new identity proposal.
 
 **Key Characteristics:**
 
@@ -179,6 +181,7 @@ This document records the implemented Phase 5 forward- and inverse-kinematics wo
 - Small corner radii, readable joint values, and immediate native interaction feedback.
 - Explicit calculation, selection, motion or instant application, and positioning-error feedback for inverse kinematics.
 - Fixed sidebar transport with speed, progress, pause/resume, stop, and immediate reset.
+- Compact preset loading, persistent mode context, and keyboard-accessible validation feedback.
 
 ## Colors
 
@@ -192,6 +195,7 @@ Dark blue-gray neutrals support restrained mint controls, cool mechanical surfac
 ### Secondary
 
 - **Target coral** (`ik-target`): the unlit wire cube distinguishes the requested world-space target from the current endpoint.
+- **Error coral** (`error`): invalid-field borders and actionable error messages reuse target coral; explanatory text and focus supplement color.
 - **Endpoint gold** (`endpoint`): the tool endpoint sphere and asymmetric base index make the endpoint and base yaw easy to locate.
 
 ### Neutral
@@ -218,7 +222,7 @@ Segoe UI is the native application family. The application initializes a 10-poin
 - **Label:** secondary guidance and camera instructions, using the label token.
 - **Coordinate:** mint endpoint values, using the 19px semibold coordinate token.
 - **Matrix:** aligned numeric transform cells, using the 12px Consolas matrix token.
-- **Solution:** compact branch names and angle summaries, using the 11px solution token.
+- **Solution:** compact branch names and angle summaries, using the 12px solution token.
 - **Emphasis:** joint headings and mint angle values, using the emphasis token with their role colors.
 
 The viewport caption is a separate PyVista text actor using Arial and the renderer's `font_size=10` setting. This is not a Qt body-font token. Labels generally wrap their text; the scene toolbar hint stays on one line. Native layout and font metrics determine line height.
@@ -227,7 +231,7 @@ The viewport caption is a separate PyVista text actor using Arial and the render
 
 The initial window is 1360 by 900, with a minimum of 960 by 680. A full-width header sits above a horizontal splitter; a native status bar anchors the bottom. The right workspace receives spare width. Neither splitter pane collapses.
 
-The sidebar explicitly enables Qt styled-background painting so its sidebar surface token is honored. The sidebar scroll container spans 285–355 logical pixels; its child sidebar spans 270–340. Its outer padding uses the outer spacing token, with section spacing between its heading, mode tabs, and mode content. A separate fixed transport sits below the scroll container, with 12-pixel margins, eight-pixel gaps, and a top divider; it keeps speed, state/percentage, a six-pixel progress bar, Pause/Resume, Stop, and the shared Reset arm visible in either mode. The Joint angles page uses an eight-pixel top inset and 12-pixel spacing; the IK target page uses the same inset and 10-pixel spacing. The solution list stays between 80 and 150 pixels tall. The workspace uses outer horizontal and workspace-block vertical margins, and section spacing between toolbar, scene, camera guidance, and results. The header uses outer horizontal and header-block vertical padding. Results use panel-inline horizontal and section vertical padding, with a six-pixel gap between the header and tabs. The tab widget has a maximum height of 136 logical pixels. Coordinate content uses eight-pixel margins and four-pixel vertical gaps; matrix content uses eight-pixel horizontal and four-pixel vertical margins with two-pixel cell gaps.
+The sidebar explicitly enables Qt styled-background painting so its sidebar surface token is honored. The sidebar scroll container spans 285–355 logical pixels; its child sidebar spans 270–340. Its outer padding is 16 pixels, with eight-pixel spacing between its heading, compact preset chooser, pose/target hint, mode tabs, and mode content. A separate fixed transport sits below the scroll container, with 12-pixel margins, eight-pixel gaps, and a top divider; it keeps speed, state/percentage, a six-pixel progress bar, Pause/Resume, Stop, and the shared Reset arm visible in either mode. The FK joints page uses an eight-pixel top inset and eight-pixel spacing; the IK target page uses the same inset and six-pixel spacing. The solution list stays between 68 and 100 pixels tall; its selection counter and adjacent Apply now / Animate actions keep the workflow compact. The workspace uses outer horizontal and workspace-block vertical margins, and section spacing between toolbar, scene, camera guidance, and results. The header uses outer horizontal and header-block vertical padding. Results use panel-inline horizontal and section vertical padding, with a six-pixel gap between the header and tabs. The tab widget has a maximum height of 136 logical pixels. Coordinate content uses eight-pixel margins and four-pixel vertical gaps; matrix content uses eight-pixel horizontal and four-pixel vertical margins with two-pixel cell gaps.
 
 The viewport expands vertically. Compact tabbed results stay below it, and camera instructions remain visible between them. Resizing uses Qt layouts and sidebar scrolling; there are no web breakpoints or alternate mobile compositions. The native Windows title bar remains OS-controlled.
 
@@ -245,7 +249,7 @@ Controls and scrollbar handles use the control radius; placeholder rows and resu
 
 ### Buttons
 
-**Calculate IK**, **Apply instantly** and **Move to solution**, **Reset arm**, **Reset view**, and **Copy results** are native `QPushButton` actions. Their default, hover, pressed, disabled, and focus variants are recorded in the frontmatter. Hover changes the fill and border; pressed changes the fill; keyboard focus thickens the mint border. Feedback is immediate with no custom transition. Reset view supports Ctrl+Home and has a tooltip describing that shortcut; it restores the camera without changing the pose. Reset arm immediately cancels motion, returns transport state to Idle, restores base 0 degrees, shoulder 45 degrees, and elbow -90 degrees, clears IK solutions and the marker, and retains the camera and target input text. Copy results exports the current angles, world-frame endpoint coordinates, and homogeneous transform as plain text to the local clipboard; the status bar confirms the copy. Its tooltip describes the exported content.
+**Calculate IK**, **Apply now** and **Animate**, **Reset arm**, **Reset view**, and **Copy results** are native `QPushButton` actions. Their default, hover, pressed, disabled, and focus variants are recorded in the frontmatter. Hover changes the fill and border; pressed changes the fill; keyboard focus thickens the mint border. Feedback is immediate with no custom transition. Reset view supports Ctrl+Home and has a tooltip describing that shortcut; it restores the camera without changing the pose. Reset arm immediately cancels motion, returns transport state to Idle, restores base 0 degrees, shoulder 45 degrees, and elbow -90 degrees, clears IK solutions and the marker, and retains the camera and target input text. Reset arm supports Ctrl+R. Copy results supports Ctrl+Shift+C and exports the current angles, world-frame endpoint coordinates, and homogeneous transform as plain text to the local clipboard; the status bar confirms the copy. Its tooltip describes the exported content.
 
 ### Cards / Containers
 
@@ -253,21 +257,27 @@ The results frame is a quiet raised container with panel corners. The placeholde
 
 ### Sidebar and Status
 
-The scrollable sidebar body groups arm configuration into **Joint angles** and **IK target** native tabs. Switching mode preserves active or paused motion and keeps live results available. The fixed transport below the scrollable body contains the shared Reset arm action. The joint page identifies live forward kinematics and explains gold endpoint versus coral target. A raised native status bar reports readiness, joint updates, and clipboard confirmation while retaining the native size grip. The sidebar's vertical scrollbar is 10 logical pixels wide; its handle has a minimum height of 24. Mode tabs share the results tabs' hover, selected, and focus treatment.
+The scrollable sidebar body groups arm configuration into **FK joints** and **IK target** native tabs. Switching mode preserves active or paused motion and keeps live results available. The persistent header caption reads FK · Joint controls or IK · Target workflow, including when the sidebar body is scrolled. The fixed transport below the scrollable body contains the shared Reset arm action. The joint page identifies live forward kinematics and explains gold endpoint versus coral target. A raised native status bar reports readiness, joint updates, and clipboard confirmation while retaining the native size grip. The sidebar's vertical scrollbar is 10 logical pixels wide; its handle has a minimum height of 24. Mode tabs share the results tabs' hover, selected, and focus treatment.
+
+### Demonstration Presets
+
+A compact native combo and adjacent **Load** button sit above the mode tabs. Changing the selection alone does nothing. The hint distinguishes **Pose · applies immediately** from **Target · calculate before moving**. **Home position** restores (0, 45, -90) degrees through Reset arm. **Fully extended** loads (0, 0, 0), **Raised arm** (0, 60, 0), and **Elbow bend** (0, 0, 90); these immediate poses open FK joints and clear stale IK solutions and the target marker while retaining target text and camera. **IK demonstration** derives a reachable target through shared FK at the seed (30, 60, -90), fills target fields to nine decimals, and opens IK target without moving the arm. Loading any preset interrupts active or paused motion.
 
 ### IK Target Fields and Solutions
 
 Three accessible `QLineEdit` fields label X, Y, and Z in millimetres and initially contain the current endpoint to six decimal places. They accept finite decimal or scientific-notation text. Fields use the placeholder surface, primary text, a one-pixel control border, four-pixel radius, and six-pixel padding; focus changes the border to mint without changing its width.
 
-**Calculate IK** parses the target and populates a word-wrapped native `QListWidget` without moving the robot. Each row shows a branch and B/S/E angles to two decimals; its tooltip exposes ten-decimal angles and nine-decimal error. The closest solution is selected by default. The list uses a one-pixel control border, five-pixel item padding, the solution typography token, and a button-hover fill for selection. Keyboard focus changes its border to mint. Fields and list have no custom disabled or error color variant; messages communicate errors in wrapping muted text. **Apply instantly** and **Move to solution** uses the shared disabled-button treatment until a valid row is selected.
+**Calculate IK** parses the target and populates a word-wrapped native `QListWidget` without moving the robot. Each row shows a branch and B/S/E angles to two decimals; its tooltip exposes ten-decimal angles and nine-decimal error. The closest solution is selected by default. The list uses a one-pixel control border, four-pixel item padding, the solution typography token, and a button-hover fill for selection. Keyboard focus changes its border to mint. Invalid fields use the coral error border, and errors use the coral error role with wrapping recovery text. Invalid-input messages name the affected axes and focus the first invalid field; editing clears that field's invalid border. Successful calculation focuses the solution list and uses mint success text. A counter reports **Selected solution n of total** with the branch in its tooltip, or **No solution selected**. **Apply now** and **Animate** use the shared disabled-button treatment until a valid row is selected.
 
-Apply instantly cancels motion and applies the full-precision configuration immediately. Move to solution interpolates from the current sampled pose to the selected full-precision configuration. Both keep FK, matrix, angle labels, and the mint positioning-error label in millimetres to nine decimals synchronized. Editing or recalculating a target cancels active or paused motion, clears stale solutions and positioning feedback, disables both solution actions, and hides the previous target until recalculation. Invalid input, unreachable targets, joint-limit restrictions, and validation failures leave the pose intact. Finite parsed targets retain their marker even when no solution is found. Successful calculations may include singularity or boundary notes. Manual joint changes keep existing solutions and refresh positioning error; recalculation refreshes their nearest-first order.
+XYZ labels are mnemonic buddies (Alt+X/Y/Z); Enter in any target field calculates without moving. Explicit Tab order follows X, Y, Z, Calculate IK, solutions, Apply now, Animate; the Speed label also has a mnemonic buddy.
+
+Apply now cancels motion and applies the full-precision configuration immediately. Animate interpolates from the current sampled pose to the selected full-precision configuration. Both keep FK, matrix, angle labels, and the mint positioning-error label in millimetres to nine decimals synchronized. Editing or recalculating a target cancels active or paused motion, clears stale solutions and positioning feedback, disables both solution actions, and hides the previous target until recalculation. Invalid input, unreachable targets, joint-limit restrictions, and validation failures leave the pose intact. Finite parsed targets retain their marker even when no solution is found. Successful calculations may include singularity or boundary notes. Manual joint changes keep existing solutions and refresh positioning error; recalculation refreshes their nearest-first order.
 
 ### Motion Transport
 
 A fixed native `MotionControls` frame remains below the scrollable sidebar body without changing the viewport or results composition. Its top row holds Speed, a `QComboBox` with **Slow / Normal / Fast** (Normal initially), and mint state/percentage text. The second row is a textless six-pixel `QProgressBar`; the final row contains **Pause / Resume**, **Stop**, and shared **Reset arm**. State text and speed guidance use 12px text. The transport uses the sidebar surface and divider border; the combo reuses field surface, control border, four-pixel corners, five-pixel padding, mint focus border, and muted disabled text. Its popup uses the existing selected-row fill. Progress uses the divider track, arm-mint fill, and three-pixel corners. No new palette colors are introduced.
 
-States are **Idle**, **Running**, **Paused**, **Completed**, and **Cancelled**, with an integer elapsed-time percentage. Pause changes to Resume while paused. Pause/Resume and Stop are enabled only during active or paused motion; the speed selector is disabled in both states and configures the next move. Completed and Cancelled retain the last progress until a new move or reset. Stop samples and holds the current pose; Reset arm is immediate and returns to Idle at 0%. A zero-distance move completes immediately at 100%. Starting another move samples and replaces the current motion. Manual slider edits and Apply instantly cancel it. Mode changes, results tabs, clipboard export, and camera interaction preserve it.
+States are **Idle**, **Running**, **Paused**, **Completed**, and **Cancelled**, with an integer elapsed-time percentage. Pause changes to Resume while paused. Pause/Resume and Stop are enabled only during active or paused motion; the speed selector is disabled in both states and configures the next move. Completed and Cancelled retain the last progress until a new move, reset, or direct pose command. A direct pose after terminal motion returns to Idle at 0%; an override of active or paused motion reports Cancelled. Stop samples and holds the current pose; Reset arm is immediate and returns to Idle at 0%. A zero-distance move completes immediately at 100%. Starting another move samples and replaces the current motion. Manual slider edits and Apply now cancel it. Mode changes, results tabs, clipboard export, and camera interaction preserve it.
 
 Smoothstep `3*t*t - 2*t*t*t` moves the actual robot in bounded joint space, with all joints sharing one duration and the exact target assigned on completion. Slow, Normal, and Fast limit peak interpolated joint speed to 45, 90, and 180 degrees/s. Duration is `max(1 second, 1.5 * largest absolute joint change / selected peak speed)`. A precise 20ms Qt timer requests updates from monotonic elapsed time; paused wall time is excluded. Sliders, actors, coordinates, matrix, and target error follow the same full-precision model. This functional robot motion introduces no decorative shell transitions and makes no collision-avoidance, Cartesian-path, or physical-dynamics claim.
 
@@ -281,7 +291,7 @@ The slider has a 24-pixel minimum height, a four-pixel track, mint progress, and
 
 A PyVistaQt interactor displays one mechanically modeled 3-DOF arm: a base plate, bearing, turntable, pedestal, paired beam segments with mint inlays, joint bearings with caps and axles, tool collar, and gold endpoint sphere. Shared core-model transforms position the actors; mesh detail does not alter the underlying link lengths. The shoulder height is 100 mm, upper arm 200 mm, and forearm 150 mm. The endpoint marker is centered on the mathematical endpoint and the collar stops there.
 
-The scene retains a wire grid, conventional coordinate axes, and the caption "3-DOF ARM / Z UP". Trackball interaction supports rotation, zoom, and pan. Reset view restores perspective and the initial camera. Joint motion leaves the camera in place. The gold endpoint marker matches the calculated endpoint shown in the results panel. A coral wire cube, 30 mm wide on each axis with two-pixel lines and no lighting, marks the last finite calculated target. It starts hidden, does not change the camera, and clears on target edits or Reset arm. After instant application or completed motion, the gold endpoint lies at its center within the reported positioning error.
+The scene retains a wire grid, conventional coordinate axes, and the caption "Z UP  /  50 mm GRID". Trackball interaction supports rotation, zoom, and pan. Reset view restores perspective and the initial camera. Joint motion leaves the camera in place. The gold endpoint marker matches the calculated endpoint shown in the results panel. A coral wire cube, 30 mm wide on each axis with two-pixel lines and no lighting, marks the last finite calculated target. It starts hidden, does not change the camera, and clears on target edits or Reset arm. After instant application or completed motion, the gold endpoint lies at its center within the reported positioning error.
 
 ### Forward-Kinematics Results
 
@@ -289,7 +299,7 @@ A native `ResultsPanel` keeps a section heading and Copy results action above tw
 
 Coordinate and matrix values use three decimal places and normalize rounded negative zero to `0.000`. Every numeric coordinate and matrix cell supports mouse text selection and has an accessible name identifying the axis or matrix row and column. Matrix cells are right aligned and do not wrap. Copy results includes both pages' data regardless of the selected tab.
 
-Tabs use the raised surface, muted unselected text, and a two-pixel bottom border. Selection changes text to the primary text color and the underline to mint; hover uses the button surface, and keyboard focus uses a primary-text underline. The pane has no border. Keep the results compact so the scene remains dominant at both supported review sizes.
+Tabs use the raised surface, muted unselected text, and a two-pixel bottom border. Selection changes text to the primary text color and the underline to mint; hover uses the button surface, and keyboard focus uses a primary-text underline. The pane has no border. Keep the results compact so the scene remains dominant at all supported review widths (960, 1100, and 1360 pixels).
 
 ## Do's and Don'ts
 
@@ -299,7 +309,7 @@ Tabs use the raised surface, muted unselected text, and a two-pixel bottom borde
 - **Do** preserve visible keyboard focus, signed joint limits, degree values, camera guidance, and the distinct Reset arm and Reset view behaviors.
 - **Do** keep live coordinates and matrix values synchronized with the arm, state millimetres and frame direction, and preserve text selection and clipboard export.
 - **Do** preserve the explicit calculate/select/move-or-apply workflow, target invalidation, positioning feedback, and coral-target/gold-endpoint distinction.
-- **Do** keep motion transport visible, distinguish Move to solution from Apply instantly, and retain immediate Reset arm.
+- **Do** keep motion transport visible, distinguish Animate from Apply now, and retain immediate Reset arm.
 - **Do** use native Qt layout behavior and the established surface and typography tokens.
 
 ### Don't:
@@ -308,3 +318,5 @@ Tabs use the raised surface, muted unselected text, and a two-pixel bottom borde
 - **Don't** add decorative shadows, instrument-panel ornament, or competing shell accents.
 - **Don't** move the arm during calculation, apply invalid or stale solutions, or imply collision avoidance, independent orientation control, Cartesian planning, or physical dynamics.
 - **Don't** substitute browser layouts or web component libraries for the native Qt interface.
+
+Native review captures for Phase 6 are stored under `.impeccable/review/phase6/`: `demo-{960,1100,1360}-{fully-extended,raised-arm,elbow-bend,ik-matrix,ik-actions,invalid}.png` and `view-angle-{0,1}.png`. These are desktop captures, not browser previews.

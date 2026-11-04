@@ -174,3 +174,41 @@ def test_same_pose_finishes_without_timer(motion):
     motion.start(motion.model.angles)
     assert motion.state == MotionState.COMPLETED
     assert motion.progress == 1
+
+
+@pytest.mark.parametrize("terminal", ["idle", "completed", "cancelled"])
+def test_instant_pose_clears_stale_terminal_progress(motion, terminal):
+    if terminal != "idle":
+        motion.start((180, 0, 0))
+        motion.clock.now += motion.duration/2
+        if terminal == "completed":
+            motion.clock.now += motion.duration
+            motion.advance()
+        else:
+            motion.stop()
+    motion.apply_instant((20.25, 15.5, -80.125))
+    assert motion.state == MotionState.IDLE
+    assert motion.progress == 0
+    assert motion.model.angles == (20.25, 15.5, -80.125)
+
+
+@pytest.mark.parametrize("paused", [False, True])
+def test_instant_override_cancels_active_motion(motion, paused):
+    motion.start((180, 0, 0))
+    motion.clock.now += motion.duration/2
+    if paused:
+        motion.pause()
+    motion.apply_instant((5, 10, 15))
+    assert motion.state == MotionState.CANCELLED
+    assert motion.model.angles == (5, 10, 15)
+    motion.clock.now += 100
+    motion.advance()
+    assert motion.model.angles == (5, 10, 15)
+
+
+def test_invalid_instant_pose_preserves_running_move(motion):
+    motion.start((180, 0, 0))
+    previous = (motion.model.angles, motion.target_angles, motion.state)
+    with pytest.raises(ValueError):
+        motion.apply_instant((181, 0, 0))
+    assert (motion.model.angles, motion.target_angles, motion.state) == previous

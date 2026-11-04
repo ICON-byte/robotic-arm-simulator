@@ -2,6 +2,7 @@
 
 import os
 import sys
+import logging
 from importlib.resources import files
 
 # Select the same binding for QtPy and the application before visualization imports.
@@ -23,8 +24,10 @@ def main() -> int:
 
         window = MainWindow()
         window.show()
-    except Exception as exc:
-        QMessageBox.critical(None, "Unable to start the 3D workspace", f"{exc}\n\nCheck your graphics driver and the installed dependencies. See README.md for setup instructions.")
+    except Exception:
+        logging.getLogger(__name__).exception("Unable to initialize the desktop workspace")
+        QMessageBox.critical(None, "Unable to start the 3D workspace",
+                             "The 3D workspace could not be initialized. Check the virtual environment dependencies and graphics driver, then restart. See README.md for setup instructions.")
         return 1
     return app.exec()
 

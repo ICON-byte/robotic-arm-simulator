@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-04",
+  "scope": "Local Qt/VTK simulation sample; Python tracemalloc excludes native and GPU allocations",
+  "measured_motion_frames": 1800,
+  "warmup_frames": 300,
+  "actor_count": 24,
+  "child_timer_count": 3,
+  "python_heap_after_first_900_bytes": 49394,
+  "python_heap_after_second_900_bytes": 59889,
+  "second_batch_growth_bytes": 10495,
+  "python_peak_bytes": 199904,
+  "active_timers_after_close": 0
+}

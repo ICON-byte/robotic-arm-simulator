@@ -1,9 +1,10 @@
-"""Joint controls with explicit placeholders for later kinematics modes."""
+"""Demonstration chooser and synchronized joint/target workflows."""
 
 from PySide6.QtCore import Qt, Signal, QSignalBlocker
-from PySide6.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QSlider,
+from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QPushButton, QSlider,
                               QTabWidget, QVBoxLayout, QWidget)
 from .inverse_controls import InverseControls
+from ..core.presets import IK_PRESET_NAME, PRESET_NAMES
 
 
 def label(text, role=None):
@@ -22,6 +23,7 @@ def angle_text(angle):
 class ControlSidebar(QWidget):
     angles_changed = Signal(tuple)
     reset_requested = Signal()
+    preset_requested = Signal(str)
 
     def __init__(self, model, parent=None):
         super().__init__(parent)
@@ -30,15 +32,30 @@ class ControlSidebar(QWidget):
         self.setMinimumWidth(270)
         self.setMaximumWidth(340)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(8)
         layout.addWidget(label("Arm configuration", "section"))
+        presets = QHBoxLayout()
+        self.presets = QComboBox()
+        self.presets.addItems(list(PRESET_NAMES))
+        self.presets.setAccessibleName("Demonstration preset")
+        self.presets.setToolTip("Choose a demonstration; Load applies a pose or prepares an IK target")
+        presets.addWidget(self.presets, 1)
+        self.load_preset_button = QPushButton("Load")
+        self.load_preset_button.setAccessibleName("Load selected demonstration preset")
+        self.load_preset_button.clicked.connect(lambda: self.preset_requested.emit(self.presets.currentText()))
+        presets.addWidget(self.load_preset_button)
+        layout.addLayout(presets)
+        self.preset_hint = label("Pose · applies immediately", "muted")
+        layout.addWidget(self.preset_hint)
+        self.presets.currentTextChanged.connect(self._preset_changed)
+        self._preset_changed(self.presets.currentText())
         self.modes = QTabWidget()
         layout.addWidget(self.modes)
         joint_page = QWidget()
         layout = QVBoxLayout(joint_page)
         layout.setContentsMargins(0, 8, 0, 0)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
         layout.addWidget(label("Adjust the joints to explore the arm's geometry.", "muted"))
         self.sliders = []
         self.angle_labels = []
@@ -60,15 +77,16 @@ class ControlSidebar(QWidget):
             layout.addWidget(label(f"{low:+d}° to {high:+d}°", "muted"))
         self.reset_button = QPushButton("Reset arm")
         self.reset_button.setObjectName("resetArmButton")
-        self.reset_button.setToolTip("Restore base 0°, shoulder 45°, elbow −90°; keep the camera position")
+        self.reset_button.setShortcut("Ctrl+R")
+        self.reset_button.setToolTip("Reset arm (Ctrl+R): stop motion, restore 0°, 45°, −90°, and clear IK; keep the camera")
         self.reset_button.clicked.connect(lambda: self.reset_requested.emit())
-        layout.addSpacing(16)
+        layout.addSpacing(8)
         layout.addWidget(label("Forward kinematics · Live", "accent"))
         layout.addWidget(label("Coordinates and matrix below the scene", "muted"))
         layout.addSpacing(4)
         layout.addStretch(1)
         layout.addWidget(label("Gold: endpoint · Coral: IK target", "muted"))
-        self.modes.addTab(joint_page, "Joint angles")
+        self.modes.addTab(joint_page, "FK joints")
         self.ik = InverseControls(model)
         self.modes.addTab(self.ik, "IK target")
         self.set_angles(model.angles)
@@ -77,6 +95,11 @@ class ControlSidebar(QWidget):
         angles = list(self._angles)
         angles[joint] = value
         self.angles_changed.emit(tuple(angles))
+
+    def _preset_changed(self, name):
+        is_target = name == IK_PRESET_NAME
+        self.preset_hint.setText("Target · calculate before moving" if is_target else "Pose · applies immediately")
+        self.load_preset_button.setToolTip("Prepare a reachable IK target; keep the current pose" if is_target else "Apply this pose now and stop any active motion")
 
     def set_angles(self, angles):
         self._angles = tuple(angles)

@@ -493,3 +493,202 @@ def test_motion_frames_and_controls_at_both_sizes(app, window):
         app.processEvents()
         if capture_dir:
             assert window.grab().save(os.path.join(capture_dir, f"motion-{width}-paused.png"))
+
+
+def test_repeated_demo_presets_and_ik_preparation(app, window):
+    from robotic_arm_simulator.core.presets import IK_PRESET_NAME, POSE_PRESETS, demonstration_target
+    camera = camera_state(window.viewport.plotter)
+    for _ in range(2):
+        for name, expected in POSE_PRESETS.items():
+            window.controls.presets.setCurrentText(name)
+            QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+            assert window.robot.angles == expected
+            assert window.results.result.angles == expected
+            assert window.controls.ik.result is None
+        pose = window.robot.angles
+        window.controls.presets.setCurrentText(IK_PRESET_NAME)
+        assert "Target" in window.controls.preset_hint.text()
+        QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+        assert window.robot.angles == pose
+        assert window.controls.modes.currentIndex() == 1
+        assert "IK" in window.mode_status.text()
+        panel = window.controls.ik
+        assert panel.result is None and not panel.move_button.isEnabled()
+        np.testing.assert_allclose([float(field.text()) for field in panel.inputs], demonstration_target(window.robot), atol=1e-8)
+        QTest.mouseClick(panel.calculate_button, Qt.MouseButton.LeftButton)
+        assert panel.solution_list.count() >= 2
+        assert "Selected solution 1" in panel.selection_label.text()
+        panel.solution_list.setCurrentRow(1)
+        assert "Selected solution 2" in panel.selection_label.text()
+    np.testing.assert_allclose(camera_state(window.viewport.plotter), camera)
+
+
+@pytest.mark.parametrize("preset", ["Home position", "Fully extended", "Raised arm", "Elbow bend", "IK demonstration"])
+def test_preset_during_motion_stops_old_timer(app, window, preset):
+    from robotic_arm_simulator.core.motion import MotionState
+    clock = [100.0]
+    window.motion.clock = lambda: clock[0]
+    start_motion_to_ik(window)
+    clock[0] += window.motion.duration/2
+    window._motion_tick()
+    current = window.robot.angles
+    window.controls.presets.setCurrentText(preset)
+    QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+    assert not window.motion.active
+    assert not window.motion_timer.isActive()
+    if preset == "IK demonstration":
+        assert window.robot.angles == current
+        assert window.motion.state == MotionState.CANCELLED
+    elif preset == "Home position":
+        assert window.motion.state == MotionState.IDLE
+        assert window.robot.angles == window.robot.initial_angles
+
+
+def test_invalid_fields_and_keyboard_navigation(app, window):
+    panel = window.controls.ik
+    set_ik_target(window, ("bad", "nan", "inf"))
+    window.activateWindow()
+    panel.inputs[0].setFocus()
+    QTest.keyClick(panel.inputs[0], Qt.Key.Key_Tab)
+    assert QApplication.focusWidget() is panel.inputs[1]
+    QTest.keyClick(panel.inputs[1], Qt.Key.Key_Tab)
+    assert QApplication.focusWidget() is panel.inputs[2]
+    QTest.keyClick(panel.inputs[2], Qt.Key.Key_Return)
+    assert "X, Y, Z" in panel.message.text()
+    assert panel.message.property("role") == "error"
+    assert QApplication.focusWidget() is panel.inputs[0]
+    assert all(field.property("invalid") for field in panel.inputs)
+    panel.inputs[0].setText("250")
+    assert not panel.inputs[0].property("invalid")
+    set_ik_target(window, (250, 0, 100))
+    QTest.keyClick(panel.inputs[2], Qt.Key.Key_Return)
+    assert panel.result is not None
+    assert panel.message.property("role") == "accent"
+    assert not any(field.property("invalid") for field in panel.inputs)
+
+
+def test_repeated_workflows_reuse_scene_and_cancel_old_motion(app, window):
+    clock = [100.0]
+    window.motion.clock = lambda: clock[0]
+    ids = {name: actor.GetAddressAsString("") for name, actor in window.viewport.arm.actors.items()}
+    count = len(window.viewport.plotter.renderer.actors)
+    for index in range(12):
+        window._reset_arm()
+        window.controls.modes.setCurrentIndex(0)
+        for value in (0, 90, -90, 180, -180, 20):
+            window.controls.sliders[0].setValue(value)
+        for target in ((1e-12, 0, 450), (350, 0, 100), (250, 0, 100)):
+            set_ik_target(window, target)
+            window.controls.ik.calculate()
+            assert window.controls.ik.result is not None
+            window.controls.ik.calculate()
+            assert window.controls.ik.solution_list.count() >= 1
+        window.controls.ik.move_solution()
+        duration = window.motion.duration
+        clock[0] += duration/2
+        window._motion_tick()
+        if index % 2:
+            window._pause_resume_motion()
+            pose = window.robot.angles
+            clock[0] += 5
+            window._pause_resume_motion()
+            assert window.robot.angles == pose
+        window._stop_motion()
+        held = window.robot.angles
+        window._pause_resume_motion()  # Cancelled motion cannot be resumed.
+        assert window.robot.angles == held
+        window.controls.ik.move_solution()
+        clock[0] += window.motion.duration + 0.01
+        window._motion_tick()
+        assert "X: 250.000 mm" in window.results.clipboard_text()
+        np.testing.assert_allclose(window.results.result.endpoint, (250, 0, 100), atol=1e-6)
+    assert count == len(window.viewport.plotter.renderer.actors)
+    assert ids == {name: actor.GetAddressAsString("") for name, actor in window.viewport.arm.actors.items()}
+
+
+def test_demo_layout_and_camera_from_multiple_angles(app, window):
+    from robotic_arm_simulator.core.presets import POSE_PRESETS
+    capture_dir = os.environ.get("SIMULATOR_CAPTURE_DIR")
+    for width, height in [(960, 680), (1100, 760), (1360, 900)]:
+        window.setMinimumSize(width, height)
+        window.resize(width, height)
+        app.processEvents()
+        assert (window.width(), window.height()) == (width, height)
+        for name in ("Fully extended", "Raised arm", "Elbow bend"):
+            window.controls.presets.setCurrentText(name)
+            QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+            app.processEvents()
+            assert window.viewport.width() > 500 and window.viewport.height() > 250
+            if capture_dir:
+                slug = name.lower().replace(" ", "-")
+                assert window.grab().save(os.path.join(capture_dir, f"demo-{width}-{slug}.png"))
+        window.controls.presets.setCurrentText("IK demonstration")
+        QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+        panel = window.controls.ik
+        panel.calculate()
+        panel.apply_solution()
+        window.results.tabs.setCurrentIndex(1)
+        app.processEvents()
+        if capture_dir:
+            assert window.grab().save(os.path.join(capture_dir, f"demo-{width}-ik-matrix.png"))
+        scroll = window.controls.parentWidget().parentWidget()
+        scroll.ensureWidgetVisible(panel.move_button)
+        app.processEvents()
+        assert scroll.viewport().rect().contains(panel.move_button.mapTo(scroll.viewport(), panel.move_button.rect().bottomRight()))
+        if capture_dir:
+            assert window.grab().save(os.path.join(capture_dir, f"demo-{width}-ik-actions.png"))
+        set_ik_target(window, ("bad", 0, 100))
+        panel.calculate()
+        app.processEvents()
+        if capture_dir:
+            assert window.grab().save(os.path.join(capture_dir, f"demo-{width}-invalid.png"))
+    window.controls.presets.setCurrentText("Elbow bend")
+    QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+    for index, position in enumerate(([(600, 650, 500), (80, 0, 120), (0, 0, 1)],
+                                     [(-650, -700, 500), (80, 0, 120), (0, 0, 1)])):
+        window.viewport.plotter.camera_position = position
+        window.viewport.plotter.render()
+        if capture_dir:
+            assert window.grab().save(os.path.join(capture_dir, f"view-angle-{index}.png"))
+    window.viewport.reset_camera()
+    expected = camera_state(window.viewport.plotter)
+    vtk_interactor = window.viewport.plotter.iren.interactor
+    for _ in range(20):
+        drag(vtk_interactor, (300, 250), (360, 300))
+        vtk_interactor.MouseWheelForwardEvent()
+    window.viewport.reset_camera()
+    np.testing.assert_allclose(camera_state(window.viewport.plotter), expected)
+
+
+def test_startup_failure_shows_recovery_without_exception_details():
+    code = '''
+import robotic_arm_simulator.__main__ as launcher
+import robotic_arm_simulator.ui.main_window as window_module
+def fail():
+    raise RuntimeError("internal exception detail")
+def message(parent, title, body):
+    assert "internal exception detail" not in body
+    assert "graphics driver" in body and "dependencies" in body
+window_module.MainWindow = fail
+launcher.QMessageBox.critical = message
+assert launcher.main() == 1
+'''
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_copy_and_reset_shortcuts(app, window):
+    window.activateWindow()
+    window.controls.presets.setCurrentText("Fully extended")
+    QTest.mouseClick(window.controls.load_preset_button, Qt.MouseButton.LeftButton)
+    clipboard = QApplication.clipboard()
+    previous = clipboard.text()
+    try:
+        QTest.keyClick(window, Qt.Key.Key_C, Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
+        QTest.qWait(150)
+        assert "X: 350.000 mm" in clipboard.text()
+        QTest.keyClick(window, Qt.Key.Key_R, Qt.KeyboardModifier.ControlModifier)
+        QTest.qWait(150)
+        assert window.robot.angles == window.robot.initial_angles
+    finally:
+        clipboard.setText(previous)

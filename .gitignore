@@ -1,9 +1,44 @@
+# Local Python environments
 .venv/
-.tmp/
+venv/
+.env/
+
+# Python bytecode and generated package metadata
 __pycache__/
 *.py[cod]
 *.egg-info/
+.eggs/
+
+# Test, coverage, type-checker, and linter output
 .pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+/coverage.xml
+.mypy_cache/
+.ruff_cache/
+
+# Build and distribution output (including future PyInstaller bundles)
 build/
 dist/
+# Keep PyInstaller .spec files and requirements-lock.txt tracked.
+
+# Local configuration; example templates may be shared
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Temporary files and local design-tool session state
+.tmp/
 .impeccable/questions/
+# Keep .impeccable/design.json and verification screenshots tracked.
+
+# Editor and operating-system artifacts
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

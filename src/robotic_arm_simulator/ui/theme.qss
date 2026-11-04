@@ -38,8 +38,8 @@ QTabBar::tab:hover { background: #273743; }
 QTabBar::tab:focus { border-bottom-color: #e5edf3; }
 QLineEdit { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; border-radius: 4px; padding: 6px; }
 QLineEdit:focus { border-color: #7ed5c7; }
-QListWidget { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; font-size: 11px; }
-QListWidget::item { padding: 5px; }
+QListWidget { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; font-size: 12px; }
+QListWidget::item { padding: 4px; }
 QListWidget::item:selected { background: #344a57; color: #e5edf3; }
 QListWidget:focus { border-color: #7ed5c7; }
 QFrame#motionControls { background: #18212b; border-top: 1px solid #33414f; }
@@ -50,3 +50,5 @@ QComboBox:disabled { color: #8796a5; }
 QComboBox QAbstractItemView { background: #202b36; color: #e5edf3; selection-background-color: #344a57; }
 QProgressBar { background: #33414f; border: none; border-radius: 3px; min-height: 6px; max-height: 6px; }
 QProgressBar::chunk { background: #59bdb0; border-radius: 3px; }
+QLabel[role="error"] { color: #f59a87; }
+QLineEdit[invalid="true"] { border-color: #f59a87; }

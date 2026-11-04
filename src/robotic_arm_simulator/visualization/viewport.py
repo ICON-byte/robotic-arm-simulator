@@ -29,7 +29,7 @@ class Viewport(QWidget):
             style="wireframe", color="#35424e", line_width=1,
         )
         self.plotter.add_axes(xlabel="X", ylabel="Y", zlabel="Z", color="#aebdc9")
-        self.plotter.add_text("3-DOF ARM  /  Z UP", position="upper_left",
+        self.plotter.add_text("Z UP  /  50 mm GRID", position="upper_left",
                               font_size=10, color="#aebdc9", font="arial")
         self.reset_camera()
 

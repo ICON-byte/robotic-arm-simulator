@@ -7,6 +7,7 @@ from .controls import ControlSidebar, label
 from .results import ResultsPanel
 from .motion_controls import MotionControls
 from ..core.motion import MotionEngine, MotionState
+from ..core.presets import IK_PRESET_NAME, POSE_PRESETS, demonstration_target
 from ..visualization.viewport import Viewport
 from ..core.robot import RobotModel
 
@@ -34,7 +35,9 @@ class MainWindow(QMainWindow):
         header_layout.setContentsMargins(24, 18, 24, 18)
         header_layout.addWidget(label("Robotic Arm Simulator", "title"))
         header_layout.addStretch()
-        header_layout.addWidget(label("3D workspace", "muted"))
+        self.mode_status = label("FK · Joint controls", "muted")
+        self.mode_status.setAccessibleName("Current control mode")
+        header_layout.addWidget(self.mode_status)
         layout.addWidget(header)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         scroll = QScrollArea()
@@ -42,6 +45,9 @@ class MainWindow(QMainWindow):
         scroll.setMinimumWidth(285)
         scroll.setMaximumWidth(355)
         self.controls = ControlSidebar(self.robot)
+        self.controls.modes.currentChanged.connect(
+            lambda index: self.mode_status.setText("FK · Joint controls" if index == 0 else "IK · Target workflow"))
+        self.controls.preset_requested.connect(self._load_preset)
         scroll.setWidget(self.controls)
         sidebar = QWidget()
         sidebar.setMinimumWidth(285)
@@ -93,21 +99,34 @@ class MainWindow(QMainWindow):
         self.statusBar().setSizeGripEnabled(True)
 
     def _set_joint_angles(self, angles):
-        # Validate before cancelling a valid active motion.
-        angles = self.robot.validate_angles(angles)
-        self.motion.stop()
+        self.motion.apply_instant(angles)
         self.motion_timer.stop()
-        self.robot.set_angles(angles)
         self._refresh_arm()
         self.motion_controls.set_motion(self.motion)
         if self.motion.state == MotionState.CANCELLED and self.controls.ik.result is not None:
-            self.controls.ik.message.setText("Motion cancelled by an immediate joint update.")
+            self.controls.ik.set_message("Motion cancelled by an immediate joint update.")
+
+    def _load_preset(self, name):
+        if name == IK_PRESET_NAME:
+            self.controls.ik.set_target(demonstration_target(self.robot))
+            self.controls.modes.setCurrentIndex(1)
+            self.statusBar().showMessage("IK target prepared · Calculate IK, select a solution, then apply or animate")
+        elif name == "Home position":
+            self._reset_arm()
+            self.controls.modes.setCurrentIndex(0)
+            self.statusBar().showMessage("Home position loaded · Default pose restored")
+        elif name in POSE_PRESETS:
+            self._set_joint_angles(POSE_PRESETS[name])
+            self.controls.ik.invalidate()
+            self.controls.ik.set_message("Pose preset loaded. Calculate IK for the retained target.")
+            self.controls.modes.setCurrentIndex(0)
+            self.statusBar().showMessage(f"{name} loaded · Pose applied immediately")
 
     def _reset_arm(self):
         self.motion_timer.stop()
         self.motion.reset()
         self.controls.ik.invalidate()
-        self.controls.ik.message.setText("Arm reset. Calculate IK to refresh solutions.")
+        self.controls.ik.set_message("Arm reset. Calculate IK to refresh solutions.")
         self._refresh_arm()
         self.motion_controls.set_motion(self.motion)
 
@@ -119,13 +138,13 @@ class MainWindow(QMainWindow):
     def _start_motion(self, angles):
         try:
             self.motion.start(angles, self.motion_controls.speed.currentText())
-        except ValueError as exc:
-            self.statusBar().showMessage(f"Cannot start motion: {exc}")
+        except ValueError:
+            self.statusBar().showMessage("Cannot start motion · Calculate IK again and select a valid solution")
             return
         self._refresh_arm()
         if self.motion.state == MotionState.RUNNING:
             self.motion_timer.start()
-            self.controls.ik.message.setText("Moving to selected solution.")
+            self.controls.ik.set_message("Moving to commanded pose.")
         else:
             self.motion_timer.stop()
         self._sync_motion_feedback()
@@ -134,13 +153,13 @@ class MainWindow(QMainWindow):
         self.motion_controls.set_motion(self.motion)
         self.statusBar().showMessage(f"Motion {self.motion.state.value.lower()} · {int(100*self.motion.progress)}% · {self.motion.speed}")
         if self.motion.state == MotionState.COMPLETED:
-            self.controls.ik.message.setText("Motion completed. Final positioning error shown below.")
+            self.controls.ik.set_message("Motion completed. Final positioning error shown below.", "success")
         elif self.motion.state == MotionState.PAUSED and self.controls.ik.result is not None:
-            self.controls.ik.message.setText("Motion paused. Resume to continue or Stop to hold this pose.")
+            self.controls.ik.set_message("Motion paused. Resume to continue or Stop to hold this pose.")
         elif self.motion.state == MotionState.RUNNING:
-            self.controls.ik.message.setText("Moving to selected solution.")
+            self.controls.ik.set_message("Moving to commanded pose.")
         elif self.motion.state == MotionState.CANCELLED and self.controls.ik.result is not None:
-            self.controls.ik.message.setText("Motion cancelled. Arm held at its current pose.")
+            self.controls.ik.set_message("Motion cancelled. Arm held at its current pose.")
 
     def _motion_tick(self):
         self.motion.advance()

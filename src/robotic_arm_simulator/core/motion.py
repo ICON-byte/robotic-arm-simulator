@@ -114,6 +114,19 @@ class MotionEngine:
         if self.active:
             self.state = MotionState.CANCELLED
 
+    def apply_instant(self, target):
+        """Take direct control, clearing stale terminal progress for a new pose."""
+        target = self.model.validate_angles(target)
+        interrupted = self.active
+        self.stop()
+        self.model.set_angles(target)
+        if interrupted:
+            self.state = MotionState.CANCELLED
+        else:
+            self.start_angles = self.target_angles = target
+            self.elapsed = self.duration = 0.0
+            self.state = MotionState.IDLE
+
     def reset(self):
         self.model.reset()
         self.start_angles = self.target_angles = self.model.angles
