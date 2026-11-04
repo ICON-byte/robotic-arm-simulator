@@ -2,6 +2,8 @@
 name: Robotic Arm Simulator
 description: Native Windows Qt workspace for manipulating a three-joint robotic arm.
 colors:
+  branding-navy: "#101c2b"
+  branding-base: "#a7c7cf"
   accent: "#7ed5c7"
   arm-accent: "#59bdb0"
   arm-base: "#657788"
@@ -200,6 +202,9 @@ Dark blue-gray neutrals support restrained mint controls, cool mechanical surfac
 
 ### Neutral
 
+- **Brand navy** (`branding-navy`): the application icon ground and startup splash only.
+- **Brand base** (`branding-base`): the simplified arm icon supporting base only.
+
 - **Mechanical surfaces** (`arm-base`, `arm-bearing`, `arm-beam`, `arm-axle`): distinguish the base plate, dark bearings and collar, cool beams and pedestal, and bright axle centers. These are renderer materials.
 
 - **Canvas and scene** (`canvas`, `scene`): separate the desktop shell from the 3D rendering surface.
@@ -246,6 +251,12 @@ The shell uses tonal layering and thin separators, with no application-defined d
 Controls and scrollbar handles use the control radius; placeholder rows and results use the panel radius. Header and sidebar boundaries remain rectangular. Buttons use a one-pixel border at rest; focused buttons use a two-pixel accent border with reduced padding to preserve their footprint. The splitter is a thin divider. There are no pill chips or ornamental frames.
 
 ## Components
+
+### Application Icon and Startup Splash
+
+RoboKin3D uses an original simplified robotic arm mark: a rounded-square brand-navy ground, teal arm links, mint joint rings, a cool base, and a gold endpoint. The SVG source and PNG/ICO derivatives live in `src/robotic_arm_simulator/resources/`; the same identity serves the native window and taskbar icon. These branding colors extend the incumbent palette only for the icon and splash.
+
+The native `QSplashScreen` is 560 by 300 logical pixels, painted at the screen device pixel ratio. Its flat navy surface carries a 96-pixel mark, Segoe UI product name and subtitle, gold **Version 1.0.0**, muted initialization status, and a five-pixel teal indeterminate progress bar. Startup owns dismissal when the workspace is ready; it adds no artificial wait, shadows, glow, or decorative animation. The main workspace retains its existing surfaces, controls, and typography.
 
 ### Buttons
 

@@ -10,6 +10,7 @@ from ..core.motion import MotionEngine, MotionState
 from ..core.presets import IK_PRESET_NAME, POSE_PRESETS, demonstration_target
 from ..visualization.viewport import Viewport
 from ..core.robot import RobotModel
+from ..branding import APP_NAME, application_icon
 
 
 class MainWindow(QMainWindow):
@@ -21,7 +22,8 @@ class MainWindow(QMainWindow):
         self.motion_timer.setInterval(20)
         self.motion_timer.setTimerType(Qt.TimerType.PreciseTimer)
         self.motion_timer.timeout.connect(self._motion_tick)
-        self.setWindowTitle("Development of a Software Application for Modeling Forward and Inverse Kinematics of a Robotic Arm Using Python (3D Modeling)")
+        self.setWindowTitle(f"{APP_NAME} — 3D Robotic Arm Kinematics Simulator")
+        self.setWindowIcon(application_icon())
         self.resize(1360, 900)
         self.setMinimumSize(960, 680)
         root = QWidget()
@@ -33,7 +35,7 @@ class MainWindow(QMainWindow):
         header.setObjectName("header")
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(24, 18, 24, 18)
-        header_layout.addWidget(label("Robotic Arm Simulator", "title"))
+        header_layout.addWidget(label(APP_NAME, "title"))
         header_layout.addStretch()
         self.mode_status = label("FK · Joint controls", "muted")
         self.mode_status.setAccessibleName("Current control mode")

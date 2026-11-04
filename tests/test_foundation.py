@@ -104,12 +104,12 @@ def test_application_entrypoint_launches_and_exits():
     code = '''
 from PySide6.QtCore import QTimer
 import robotic_arm_simulator.__main__ as launcher
-BaseApplication = launcher.QApplication
-class TimedApplication(BaseApplication):
-    def __init__(self, *args):
-        super().__init__(*args)
-        QTimer.singleShot(2000, self.closeAllWindows)
-launcher.QApplication = TimedApplication
+BaseController = launcher.StartupController
+class TimedController(BaseController):
+    def start(self):
+        self.ready.connect(lambda window: QTimer.singleShot(100, window.close))
+        super().start()
+launcher.StartupController = TimedController
 raise SystemExit(launcher.main())
 '''
     result = subprocess.run([sys.executable, "-c", code], capture_output=True,

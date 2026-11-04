@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-04T16:42:54.147276+00:00",
+  "generatedAt": "2026-11-04T17:17:43.648030+00:00",
   "title": "Design System: Robotic Arm Simulator",
   "extensions": {
     "typographyMeta": {
@@ -370,6 +370,30 @@
           "inputDecimals": 9
         },
         "load": "Interrupt active/paused motion. Poses open FK joints and clear stale IK; target prepares inputs and opens IK target. Retain camera."
+      },
+      "branding": {
+        "name": "RoboKin3D",
+        "resources": "src/robotic_arm_simulator/resources/robokin3d.{svg,png,ico}",
+        "icon": "Original simplified robotic arm; brand-navy ground, arm-accent links, accent joint rings, branding-base support, endpoint gold. Native window and taskbar identity.",
+        "scope": "Application icon and startup splash only; preserve incumbent workspace tokens and UI.",
+        "splash": {
+          "widget": "QSplashScreen",
+          "logicalSize": [
+            560,
+            300
+          ],
+          "background": "{colors.branding-navy}",
+          "markLogicalSize": [
+            96,
+            96
+          ],
+          "typeface": "Segoe UI",
+          "version": "1.0.0",
+          "status": "Muted initialization status; ready workspace owns dismissal, without artificial delay.",
+          "progress": "Five-pixel indeterminate bar; arm-bearing track and arm-accent fill.",
+          "effects": "Flat surface; no shadows, glow, or decorative animation.",
+          "rendering": "Paint pixmap at screen device pixel ratio while retaining logical layout."
+        }
       }
     }
   },
@@ -444,6 +468,11 @@
       "name": "Demonstration presets",
       "kind": "custom",
       "description": "Native compact combo plus Load and pose/target hint; four immediate pose presets and one FK-derived target preparation. Details in extensions.nativeQt.presets."
+    },
+    {
+      "name": "Application icon and startup splash",
+      "kind": "custom",
+      "description": "Native RoboKin3D arm identity and flat high-DPI QSplashScreen; icon/splash scope only. Details in extensions.nativeQt.branding."
     }
   ],
   "narrative": {

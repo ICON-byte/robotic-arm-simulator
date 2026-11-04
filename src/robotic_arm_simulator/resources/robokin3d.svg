@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>RoboKin3D original robotic arm icon</title>
+  <rect width="512" height="512" rx="96" fill="#101c2b"/>
+  <path d="M112 393h198" fill="none" stroke="#a7c7cf" stroke-width="32" stroke-linecap="round"/>
+  <path d="M166 373v-70l111-140 109 79" fill="none" stroke="#59bdb0" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="166" cy="303" r="31" fill="#101c2b" stroke="#7ed5c7" stroke-width="16"/>
+  <circle cx="277" cy="163" r="31" fill="#101c2b" stroke="#7ed5c7" stroke-width="16"/>
+  <circle cx="386" cy="242" r="25" fill="#e2b77c"/>
+</svg>

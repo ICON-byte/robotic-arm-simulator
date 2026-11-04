@@ -4,22 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotic-arm-simulator"
-version = "0.1.0"
-description = "A desktop foundation for a 3D robotic arm kinematics simulator"
+version = "1.0.0"
+description = "RoboKin3D: a desktop robotic arm kinematics simulator"
 requires-python = ">=3.12,<3.13"
 dependencies = ["PySide6-Essentials", "pyvista", "pyvistaqt", "numpy>=2.0,<2.5", "vtk==9.5.2"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
+build = ["pyinstaller==6.22.3"]
 
 [project.gui-scripts]
 robotic-arm-simulator = "robotic_arm_simulator.__main__:main"
+robokin3d = "robotic_arm_simulator.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-robotic_arm_simulator = ["ui/*.qss"]
+robotic_arm_simulator = ["ui/*.qss", "resources/*.png", "resources/*.ico", "resources/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

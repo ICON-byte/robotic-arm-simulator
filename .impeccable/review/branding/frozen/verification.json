@@ -1,0 +1,13 @@
+{
+  "exe_icon_frames": 7,
+  "windows_gui_subsystem": true,
+  "splash_observed": true,
+  "main_window_visible": true,
+  "seconds_to_native_window": 12.107,
+  "native_small_icon": true,
+  "native_large_icon": true,
+  "unrelated_cwd": true,
+  "python_environment_removed": true,
+  "packaged_controls": "PASS: packaged FK, sliders, matrix, IK, clipboard, motion transport, reset, preset load",
+  "exit_code": 0
+}

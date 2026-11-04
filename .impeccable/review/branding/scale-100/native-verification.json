@@ -1,0 +1,8 @@
+{
+  "windows_identity": true,
+  "device_pixel_ratio": 1.25,
+  "native_small_icon": true,
+  "native_large_icon": true,
+  "main_window_icon": true,
+  "splash_dismissed": true
+}

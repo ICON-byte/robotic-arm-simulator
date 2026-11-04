@@ -1,4 +1,4 @@
-# Robotic Arm Kinematics Simulator
+# RoboKin3D — Robotic Arm Kinematics Simulator
 
 A Python desktop application for visualizing and understanding the forward and inverse kinematics of a three-degree-of-freedom robotic arm.
 
@@ -17,9 +17,11 @@ Developed for the university course project **Development of a Software Applicat
 - Includes five demonstration presets, keyboard interaction, input recovery, and report-ready clipboard export.
 - Runs locally without a server, database, or internet connection after dependencies are installed.
 
-**Project status:** Phases 1–6 are implemented and verified. Windows executable packaging is planned for Phase 7 and has not started. This is an educational kinematics simulator, not a physical robot controller.
+**Project status:** Phases 1–6 are implemented and verified. Phase 7 now has a locally verified Windows portable build with original application branding and a native startup splash. Distribution on a clean Windows machine remains unverified. This is an educational kinematics simulator, not a physical robot controller.
 
-Technologies: **Python 3.12**, **PySide6 Essentials** for desktop widgets, **PyVista/PyVistaQt and VTK** for 3D rendering, **NumPy** for mathematics, and **pytest** for verification. No server, API, database, or SciPy is required. Executable packaging is a future phase.
+Technologies: **Python 3.12**, **PySide6 Essentials** for desktop widgets, **PyVista/PyVistaQt and VTK** for 3D rendering, **NumPy** for mathematics, and **pytest** for verification. Windows builds use **PyInstaller**. No server, API, database, or SciPy is required.
+
+For Windows, download **RoboKin3D-v1.0.0-Windows-x64.zip** from the [v1.0.0 release](https://github.com/ICON-byte/robotic-arm-simulator/releases/tag/v1.0.0), extract the entire archive, open the `RoboKin3D` folder, and run `RoboKin3D.exe`. Keep its `_internal` folder alongside the executable. No Python installation is needed. See [BUILDING_WINDOWS.md](BUILDING_WINDOWS.md) and [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for build instructions, screenshots, diagnostics, and verification limits.
 
 For a short classroom walkthrough, see [USER_GUIDE.md](USER_GUIDE.md).
 
@@ -134,7 +136,7 @@ T_world_tool = Rz(b) @ Tz(h) @ Ry(-s) @ Tx(L1) @ Ry(-e) @ Tx(L2)
 
 ## Verification
 
-The latest complete verification on **4 November 2026** passed **161 tests with no warnings**. It includes independent mathematical references, deterministic motion timing, and real Qt/VTK integration checks. See [PHASE6_VERIFICATION.md](PHASE6_VERIFICATION.md) for the tested environment, exact-size screenshots, resource measurements, and evidence limits. This is a recorded local result, not a claim of hosted CI coverage.
+The latest complete verification on **4 November 2026** passed **169 tests with no warnings**. It includes independent mathematical references, deterministic motion timing, real Qt/VTK integration checks, and branding/startup lifecycle coverage. See [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for the current results and [PHASE6_VERIFICATION.md](PHASE6_VERIFICATION.md) for earlier workspace evidence. This is a recorded local result, not a claim of hosted CI coverage.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip check
@@ -295,16 +297,16 @@ Additional documentation: [User guide](USER_GUIDE.md), [product scope](PRODUCT.m
 | 4 — Analytical inverse kinematics and target workflow | Complete |
 | 5 — Motion animation and simulation controls | Complete |
 | 6 — UI refinement, demonstrations and validation | Complete |
-| 7 — Windows distribution and clean-machine verification | Pending approval |
+| 7 — Windows distribution and clean-machine verification | Local portable build verified; clean-machine check remains |
 
 ## Limitations and next phase
 
-Hardware rendering depends on the local graphics driver. Dependency metadata alone cannot guarantee compatibility on other machines. Packaging and testing without a Python installation belong to Phase 7.
+Hardware rendering depends on the local graphics driver. Dependency metadata alone cannot guarantee compatibility on other machines. The portable build works with its bundled runtime on this host; testing on a clean machine without Python remains outstanding.
 
-Joint limits do not provide collision avoidance: valid poses and interpolated motion can intersect the robot, base, or floor. Motion is a joint-space curve, not a straight Cartesian path or collision-free plan. There is no physical dynamics, torque, or actuator simulation. IK controls position only; tool orientation follows the chosen joints. The target marker may lie outside the current camera view; solving never resets the camera. No collision checks, Cartesian planning, numerical optimization, alternative robot selector, or standalone packaging is included.
+Joint limits do not provide collision avoidance: valid poses and interpolated motion can intersect the robot, base, or floor. Motion is a joint-space curve, not a straight Cartesian path or collision-free plan. There is no physical dynamics, torque, or actuator simulation. IK controls position only; tool orientation follows the chosen joints. The target marker may lie outside the current camera view; solving never resets the camera. No collision checks, Cartesian planning, numerical optimization, or alternative robot selector is included.
 
-Workspace startup failures show dependency/driver recovery guidance; detailed diagnostics go to the console instead of raw exception text in the dialog.
+Workspace startup failures close the splash and show recovery guidance. Detailed diagnostics go to `%LOCALAPPDATA%\RoboKin3D\logs\startup.log` instead of raw exception text in the dialog. Startup uses real stage messages and an indeterminate indicator; heavy native initialization can temporarily pause the indicator.
 
 If setup fails, confirm you are using the project-local Python 3.12 interpreter, run `pip check` through that interpreter, and compare your setup with the installation instructions. If the 3D workspace cannot initialize, also check the local graphics driver. GUI tests require a desktop session; the mathematical test command in the Verification section can run without opening the application.
 
-Phase 7 should build and verify a Windows distribution with Qt/VTK resources, clean-machine testing without Python installed, and installation documentation. Packaging requires separate approval. See Phase 1–5 reports for history and `PHASE6_VERIFICATION.md` for current evidence.
+Clean-machine verification and visual Explorer/taskbar/Alt + Tab checks with fresh shortcuts remain outstanding. Find Windows downloads on [GitHub Releases](https://github.com/ICON-byte/robotic-arm-simulator/releases). See [BUILDING_WINDOWS.md](BUILDING_WINDOWS.md) for the repeatable build and [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for current evidence and limitations.
