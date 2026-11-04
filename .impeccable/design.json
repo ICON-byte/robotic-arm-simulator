@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-04T12:03:52.318324+00:00",
+  "generatedAt": "2026-11-04T16:07:33.733258+00:00",
   "title": "Design System: Robotic Arm Simulator",
   "extensions": {
     "typographyMeta": {
@@ -21,12 +21,39 @@
         "purpose": "Muted descriptions and camera instructions."
       },
       "emphasis": {
-        "displayName": "Scope and pending heading",
-        "purpose": "Foundation marker and future section titles."
+        "displayName": "Joint emphasis",
+        "purpose": "Joint headings and current angle values."
+      },
+      "coordinate": {
+        "displayName": "Endpoint coordinates",
+        "purpose": "Prominent mint X, Y, and Z values in millimetres."
+      },
+      "matrix": {
+        "displayName": "Transform cells",
+        "purpose": "Right-aligned, nonwrapping numeric tool-to-world matrix cells."
+      },
+      "solution": {
+        "displayName": "IK solution rows",
+        "purpose": "Compact branch and B/S/E angle list."
       }
     },
     "shadows": [],
-    "motion": [],
+    "motion": [
+      {
+        "name": "robot-joint-smoothstep",
+        "value": "3*t*t - 2*t*t*t",
+        "purpose": "Functional bounded joint-space motion only; no decorative shell animation.",
+        "peakSpeedsDegreesPerSecond": {
+          "Slow": 45,
+          "Normal": 90,
+          "Fast": 180
+        },
+        "duration": "max(1.0 seconds, 1.5 * largest absolute joint change / peak speed)",
+        "timerIntervalMilliseconds": 20,
+        "clock": "monotonic; paused wall time excluded",
+        "completion": "Assign exact target tuple; zero-distance move completes immediately."
+      }
+    ],
     "breakpoints": [],
     "nativeQt": {
       "binding": "PySide6",
@@ -35,7 +62,13 @@
         "src/robotic_arm_simulator/ui/theme.qss",
         "src/robotic_arm_simulator/ui/main_window.py",
         "src/robotic_arm_simulator/ui/controls.py",
-        "src/robotic_arm_simulator/visualization/viewport.py"
+        "src/robotic_arm_simulator/ui/inverse_controls.py",
+        "src/robotic_arm_simulator/ui/results.py",
+        "src/robotic_arm_simulator/visualization/viewport.py",
+        "src/robotic_arm_simulator/visualization/arm.py",
+        "src/robotic_arm_simulator/core/robot.py",
+        "src/robotic_arm_simulator/ui/motion_controls.py",
+        "src/robotic_arm_simulator/core/motion.py"
       ],
       "units": "Qt stylesheet and layout logical pixels; renderer caption font_size is a PyVista setting.",
       "buttonBorder": {
@@ -60,7 +93,8 @@
           270,
           340
         ],
-        "splitterCollapsible": false
+        "splitterCollapsible": false,
+        "fixedTransport": "Below scrollable joint/IK body; 12px margins, 8px spacing, top divider; viewport/results composition preserved."
       },
       "scrollbar": {
         "width": 10,
@@ -68,10 +102,181 @@
       },
       "previewPolicy": "Native widgets are documented without HTML/CSS translations. No browser runtime or web breakpoints apply.",
       "palettePolicy": "Frontmatter records implemented colors. No synthesized tonal ramps are used by the native application.",
-      "interaction": "Immediate Qt state feedback; no application-defined motion or shadows.",
+      "interaction": "Immediate native shell feedback without decorative transitions; functional smoothstep joint-space robot motion.",
       "sidebarStyledBackground": true,
       "sceneToolbarHintWordWrap": false,
-      "axisLabelColor": "{colors.scene-caption}"
+      "axisLabelColor": "{colors.scene-caption}",
+      "sliders": {
+        "orientation": "horizontal",
+        "minimumHeight": 24,
+        "trackHeight": 4,
+        "handleWidth": 16,
+        "handleBorder": "2px solid {colors.sidebar}",
+        "handleMargin": "-8px 0",
+        "focusHandleBorder": "{colors.text}",
+        "jointLimitsDegrees": {
+          "Base": [
+            -180,
+            180
+          ],
+          "Shoulder": [
+            -90,
+            90
+          ],
+          "Elbow": [
+            -135,
+            135
+          ]
+        },
+        "keyboardStepDegrees": 1,
+        "valueLabels": "Right-aligned degrees up to three decimals with trailing zeros removed; thumbs show nearest whole degree. Moving one slider preserves the other exact angles."
+      },
+      "armRendering": {
+        "shading": "Phong, smooth shading with split sharp edges",
+        "ambient": 0.25,
+        "diffuse": 0.75,
+        "specular": 0.35,
+        "specularPower": 32,
+        "specularOverrides": {
+          "beamInlays": 0.2,
+          "endpoint": 0.2,
+          "baseIndex": 0.1
+        },
+        "dimensionsMillimetres": {
+          "shoulderHeight": 100,
+          "upperArm": 200,
+          "forearm": 150
+        },
+        "endpoint": "Gold sphere centered at the mathematical endpoint; collar ends there."
+      },
+      "resetBehavior": {
+        "arm": "Cancel motion immediately; restore [0, 45, -90] degrees and Idle at 0%; clear IK solutions, positioning feedback, and target marker; retain target text and camera.",
+        "view": "Restore initial perspective camera and preserve joint pose."
+      },
+      "reviewScreenshots": [
+        ".impeccable/review/phase5/motion-960-25.png",
+        ".impeccable/review/phase5/motion-960-50.png",
+        ".impeccable/review/phase5/motion-960-75.png",
+        ".impeccable/review/phase5/motion-960-paused.png",
+        ".impeccable/review/phase5/motion-1360-25.png",
+        ".impeccable/review/phase5/motion-1360-50.png",
+        ".impeccable/review/phase5/motion-1360-75.png",
+        ".impeccable/review/phase5/motion-1360-paused.png"
+      ],
+      "results": {
+        "widget": "ResultsPanel (QFrame) with QTabWidget",
+        "margins": [
+          16,
+          12,
+          16,
+          12
+        ],
+        "spacing": 6,
+        "tabs": [
+          "Coordinates",
+          "4 × 4 matrix"
+        ],
+        "tabsMaximumHeight": 136,
+        "coordinatePageMargins": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "coordinateVerticalSpacing": 4,
+        "matrixPageMargins": [
+          8,
+          4,
+          8,
+          4
+        ],
+        "matrixCellSpacing": 2,
+        "tabBorder": "2px solid {colors.raised}",
+        "selectedTabBorder": "{colors.accent}",
+        "focusedTabBorder": "{colors.text}",
+        "numericFormatting": "Coordinates and matrix: three decimals; rounded negative zero becomes 0.000. Angle summary: up to three decimals with trailing zeros removed.",
+        "accessibility": "Coordinate and matrix cells support mouse text selection and have axis or row/column accessible names.",
+        "matrixAlignment": "Right aligned, without wrapping.",
+        "clipboard": "Copy results exports current joint angles, world-frame endpoint coordinates, and the tool-to-world homogeneous transform regardless of selected tab; native status bar confirms copy.",
+        "refresh": "Joint changes, Apply instantly, every motion update, and Reset arm refresh both pages from shared FK; camera changes preserve results and active motion."
+      },
+      "inverseKinematics": {
+        "modes": [
+          "Joint angles",
+          "IK target"
+        ],
+        "switchMode": "Preserve active or paused motion and shared pose; live FK results remain available.",
+        "targetFields": {
+          "widget": "QLineEdit",
+          "axes": [
+            "X",
+            "Y",
+            "Z"
+          ],
+          "units": "world-space millimetres",
+          "initialDecimals": 6,
+          "acceptedText": "Finite decimal and scientific notation, with a decimal point.",
+          "border": "1px solid {colors.control-border}",
+          "focusBorder": "{colors.accent}",
+          "disabledAndErrorStyle": "No custom field or list disabled/error variant; errors appear in wrapping muted messages."
+        },
+        "solutionList": {
+          "widget": "QListWidget",
+          "heightRange": [
+            80,
+            150
+          ],
+          "wordWrap": true,
+          "border": "1px solid {colors.control-border}",
+          "focusBorder": "{colors.accent}",
+          "itemPadding": 5,
+          "selectedBackground": "{colors.button-hover}",
+          "rowAnglesDecimals": 2,
+          "tooltipAnglesDecimals": 10,
+          "tooltipErrorDecimals": 9,
+          "defaultSelection": "Closest valid configuration."
+        },
+        "workflow": "Calculate without moving; inspect/select valid branch; Apply instantly cancels motion and applies exact angles; Move to solution animates to exact angles. Both solution actions disabled without selection.",
+        "invalidation": "Editing or recalculating a target cancels active/paused motion, clears solutions/error, disables both solution actions, and hides marker until Calculate. Manual joint changes cancel motion, retain solutions, and refresh error.",
+        "failure": "Invalid input and calculation failures preserve pose; finite parsed targets retain marker even if unreachable. Wrapping messages distinguish invalid input, reach, joint-limit, and FK-validation failures.",
+        "positioningError": "Mint label showing current Euclidean endpoint-to-target error to nine decimals in mm; successful calculations include relevant singularity/boundary notes."
+      },
+      "targetMarker": {
+        "color": "{colors.ik-target}",
+        "shape": "Wireframe cube",
+        "dimensionsMillimetres": [
+          30,
+          30,
+          30
+        ],
+        "lineWidth": 2,
+        "lighting": false,
+        "initialVisibility": false,
+        "behavior": "Centered on finite parsed target after Calculate; hidden on target edits or Reset arm; never resets camera."
+      },
+      "motionTransport": {
+        "widget": "MotionControls (QFrame)",
+        "placement": "Fixed below scrollable sidebar body in both modes",
+        "speedPresets": [
+          "Slow",
+          "Normal",
+          "Fast"
+        ],
+        "defaultSpeed": "Normal",
+        "states": [
+          "Idle",
+          "Running",
+          "Paused",
+          "Completed",
+          "Cancelled"
+        ],
+        "progress": "Integer active-elapsed-time percentage; textless 6px QProgressBar with 3px corners; divider track and arm-accent fill.",
+        "controls": "Pause changes to Resume while paused; Pause/Resume and Stop enabled only while active/paused. Speed disabled while active/paused; Reset arm always immediate.",
+        "combo": "Native QComboBox; placeholder surface, text foreground, 1px control-border, 4px radius, 5px padding; accent focus, text-disabled foreground, button-hover popup selection.",
+        "stop": "Sample and hold current interpolated pose; retain Cancelled progress.",
+        "replace": "Sample current pose and start selected replacement; selection alone does not move.",
+        "preserveMotion": "Mode/result-tab changes, clipboard export, and camera controls."
+      }
     }
   },
   "components": [
@@ -82,43 +287,80 @@
       "description": "Native QPushButton; Ctrl+Home restores the initial perspective camera. Hover, pressed, disabled, and focus variants are in DESIGN.md."
     },
     {
-      "name": "Future joint row",
-      "kind": "custom",
-      "refersTo": "placeholder",
-      "description": "Explanatory QLabel; minimum height 58 logical pixels. Not an interactive input."
+      "name": "Reset arm",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Cancel motion immediately; restore [0, 45, -90] degrees and Idle at 0%; clear IK solutions, positioning feedback, and target marker; retain target text and camera."
     },
     {
-      "name": "Calculation results",
+      "name": "Joint sliders",
+      "kind": "input",
+      "refersTo": "slider-track",
+      "description": "Native QSlider controls with degree values, signed limits, accessible names, keyboard steps, and immediate geometry updates. Styling details are in extensions.nativeQt.sliders."
+    },
+    {
+      "name": "Forward-kinematics results",
       "kind": "card",
       "refersTo": "results",
-      "description": "Native QFrame containing a section title and explicit unavailable-calculations message."
+      "description": "Native ResultsPanel with Coordinates and 4 × 4 matrix tabs, live shared-model values, selectable and accessible numeric cells, and local clipboard export. Details are in extensions.nativeQt.results."
     },
     {
       "name": "Control sidebar",
       "kind": "custom",
       "refersTo": "sidebar",
-      "description": "Scrollable native QWidget grouping future configuration and kinematics descriptions."
+      "description": "Scrollable native Joint angles / IK target body above a fixed common motion transport. Mode switching preserves motion and live results."
     },
     {
-      "name": "Reference viewport",
+      "name": "Arm viewport",
       "kind": "custom",
       "refersTo": "viewport",
-      "description": "PyVistaQt interactor with reference cube, grid, axes, and immediate trackball camera interaction."
+      "description": "PyVistaQt interactor with a mechanical 3-DOF arm, gold endpoint, grid, axes, and trackball camera interaction; shared model transforms drive geometry. Coral wire cube marks the calculated target independently of the gold endpoint."
+    },
+    {
+      "name": "Copy results",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Native QPushButton copies joint angles, endpoint coordinates, and matrix to the local clipboard and reports confirmation in the status bar."
+    },
+    {
+      "name": "IK target fields",
+      "kind": "input",
+      "refersTo": "target-field",
+      "description": "Accessible native X/Y/Z QLineEdit inputs; mint focus border and stale-target invalidation. Details in extensions.nativeQt.inverseKinematics."
+    },
+    {
+      "name": "IK solution list",
+      "kind": "custom",
+      "refersTo": "solution-list",
+      "description": "Native QListWidget with branch/angle rows, selection, precision tooltips, mint focus, and explicit Apply instantly and Move to solution actions."
+    },
+    {
+      "name": "Calculate, move, and apply IK",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Calculate without moving; inspect/select valid branch; Apply instantly cancels motion and applies exact angles; Move to solution animates to exact angles. Both solution actions disabled without selection."
+    },
+    {
+      "name": "Motion transport",
+      "kind": "custom",
+      "refersTo": "motion-transport",
+      "description": "Fixed native speed selector, state/percentage, slim progress, Pause/Resume, Stop, and shared immediate Reset arm; details in extensions.nativeQt.motionTransport."
     }
   ],
   "narrative": {
     "northStar": "The Quiet 3D Workspace",
-    "overview": "A professional dark desktop workspace gives the rendered scene the most space and visual attention. Native Qt widgets provide readable controls, organized supporting information, and clear status feedback. The shell stays quiet and never imitates a physical instrument panel.\n\nThis document records the implemented Phase 1 foundation, rather than future robot controls or calculations. Color and shape decisions come from the Qt stylesheet and reference viewport. The north star is a descriptive name for that existing direction, not a new identity proposal.",
+    "overview": "A professional dark desktop workspace gives the rendered scene the most space and visual attention. Native Qt widgets provide readable controls, organized supporting information, and clear status feedback. The shell stays quiet and never imitates a physical instrument panel.\n\nThis document records the implemented Phase 5 forward- and inverse-kinematics workspace with smooth joint-space motion. Three limited joint sliders and an explicit target calculate/select/move-or-apply workflow share one robot state, live endpoint coordinates, joint summaries, and the final tool-to-world matrix. Color and shape decisions come from the Qt stylesheet and the mechanical arm scene. The north star is a descriptive name for that existing direction, not a new identity proposal.",
     "keyCharacteristics": [
       "Viewport-led composition with an adjustable, scrollable sidebar.",
       "Dark tonal surfaces, restrained mint emphasis, and readable text.",
-      "Small corner radii and immediate native interaction feedback.",
-      "Explicit explanations where later-phase functionality is unavailable."
+      "Small corner radii, readable joint values, and immediate native interaction feedback.",
+      "Explicit calculation, selection, motion or instant application, and positioning-error feedback for inverse kinematics.",
+      "Fixed sidebar transport with speed, progress, pause/resume, stop, and immediate reset."
     ],
     "rules": [
       {
         "name": "The Reserved Accent Rule",
-        "body": "Use mint emphasis for focus, actionable hover feedback, and the current scope marker; keep general shell surfaces neutral. Coordinate-axis shafts retain PyVista's conventional colors; their labels use the scene-caption token.",
+        "body": "Use mint emphasis for focus, actionable hover feedback, joint values, live coordinates, slider progress, selected tabs, and positioning-error feedback; keep general shell surfaces neutral. Coordinate-axis shafts retain PyVista's conventional colors; their labels use the scene-caption token.",
         "section": "colors"
       },
       {
@@ -129,14 +371,16 @@
     ],
     "dos": [
       "Do keep the viewport dominant and supporting information organized in the sidebar and results frame.",
-      "Do preserve visible keyboard focus, camera guidance, and the Reset view shortcut.",
-      "Do use explanatory text for unavailable future controls and calculations.",
+      "Do preserve visible keyboard focus, signed joint limits, degree values, camera guidance, and the distinct Reset arm and Reset view behaviors.",
+      "Do keep live coordinates and matrix values synchronized with the arm, state millimetres and frame direction, and preserve text selection and clipboard export.",
+      "Do preserve the explicit calculate/select/move-or-apply workflow, target invalidation, positioning feedback, and coral-target/gold-endpoint distinction.",
+      "Do keep motion transport visible, distinguish Move to solution from Apply instantly, and retain immediate Reset arm.",
       "Do use native Qt layout behavior and the established surface and typography tokens."
     ],
     "donts": [
       "Don't present placeholder rows as working inputs or show fabricated calculation values.",
       "Don't add decorative shadows, instrument-panel ornament, or competing shell accents.",
-      "Don't treat the reference cube as a robot model or extend Phase 1 into kinematics.",
+      "Don't move the arm during calculation, apply invalid or stale solutions, or imply collision avoidance, independent orientation control, Cartesian planning, or physical dynamics.",
       "Don't substitute browser layouts or web component libraries for the native Qt interface."
     ]
   }

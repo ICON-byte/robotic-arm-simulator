@@ -1,1 +1,1 @@
-"""Reserved for the GUI-independent robot model in subsequent phases."""
+"""GUI-independent robot geometry and joint transformations."""

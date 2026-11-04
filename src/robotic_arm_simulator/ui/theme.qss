@@ -23,3 +23,30 @@ QStatusBar { background: #1b2530; color: #a8b8c7; border-top: 1px solid #33414f;
 QScrollBar:vertical { background: #18212b; width: 10px; }
 QScrollBar::handle:vertical { background: #455b6b; min-height: 24px; border-radius: 4px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QSlider { background: transparent; min-height: 24px; }
+QSlider::groove:horizontal { background: #455b6b; height: 4px; border-radius: 2px; }
+QSlider::sub-page:horizontal { background: #59bdb0; border-radius: 2px; }
+QSlider::handle:horizontal { background: #c2ced9; border: 2px solid #18212b; width: 16px; margin: -8px 0; border-radius: 9px; }
+QSlider::handle:horizontal:hover { background: #7ed5c7; }
+QSlider::handle:horizontal:focus { background: #7ed5c7; border-color: #e5edf3; }
+QLabel[role="coordinate"] { font-size: 19px; font-weight: 600; color: #7ed5c7; }
+QLabel[role="matrix"] { font-family: Consolas; font-size: 12px; }
+QTabWidget::pane { border: none; }
+QTabBar::tab { background: #1b2530; color: #a8b8c7; padding: 5px 10px; border-bottom: 2px solid #1b2530; }
+QTabBar::tab:selected { color: #e5edf3; border-bottom-color: #7ed5c7; }
+QTabBar::tab:hover { background: #273743; }
+QTabBar::tab:focus { border-bottom-color: #e5edf3; }
+QLineEdit { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; border-radius: 4px; padding: 6px; }
+QLineEdit:focus { border-color: #7ed5c7; }
+QListWidget { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; font-size: 11px; }
+QListWidget::item { padding: 5px; }
+QListWidget::item:selected { background: #344a57; color: #e5edf3; }
+QListWidget:focus { border-color: #7ed5c7; }
+QFrame#motionControls { background: #18212b; border-top: 1px solid #33414f; }
+QFrame#motionControls QLabel { background: transparent; font-size: 12px; }
+QComboBox { background: #202b36; color: #e5edf3; border: 1px solid #455b6b; border-radius: 4px; padding: 5px; }
+QComboBox:focus { border-color: #7ed5c7; }
+QComboBox:disabled { color: #8796a5; }
+QComboBox QAbstractItemView { background: #202b36; color: #e5edf3; selection-background-color: #344a57; }
+QProgressBar { background: #33414f; border: none; border-radius: 3px; min-height: 6px; max-height: 6px; }
+QProgressBar::chunk { background: #59bdb0; border-radius: 3px; }
