@@ -1,4 +1,4 @@
-RoboKin3D 1.0.0 — Windows x64 portable application
+RoboKin3D 1.0.1 — Windows x64 portable application
 
 Extract the ENTIRE ZIP to a writable local folder before launching RoboKin3D.exe.
 Keep RoboKin3D.exe and _internal together. No separate Python installation,

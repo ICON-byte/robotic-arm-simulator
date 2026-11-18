@@ -35,7 +35,7 @@ def main():
             raise SystemExit(f"Missing bundled resource: {name}")
     shutil.copyfile(ROOT / "packaging/README.txt", bundle / "README.txt")
     shutil.copyfile(ROOT / "USER_GUIDE.md", bundle / "USER_GUIDE.md")
-    archive = ROOT / "dist/RoboKin3D-v1.0.0-Windows-x64.zip"
+    archive = ROOT / "dist/RoboKin3D-v1.0.1-Windows-x64.zip"
     paths = sorted(p for p in bundle.rglob("*") if p.is_file())
     with ZipFile(archive, "w", compression=ZIP_DEFLATED, compresslevel=6) as output:
         for path in paths:

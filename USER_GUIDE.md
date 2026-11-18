@@ -71,3 +71,5 @@ Sliders indicate whole degrees while labels retain fractional IK/motion values. 
 Valid joint limits do not prevent link/base/floor collisions. Motion is a joint-space curve, not a guaranteed straight or collision-free tool path. No dynamics or motor torque is simulated.
 
 A 20 ms timer requests about 50 visual updates/s; actual rate depends on the machine. Scroll and zoom/pan as needed on smaller displays. A standalone Windows executable has not been packaged yet.
+
+<small style="color: #a8b8c7;">Developed by ICON &amp; GAZA</small>

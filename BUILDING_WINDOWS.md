@@ -13,10 +13,10 @@ The script validates Windows/x64/Python 3.12 and the project environment, runs `
 Outputs (ignored by Git):
 
 - `dist/RoboKin3D/RoboKin3D.exe` plus `_internal`, README.txt and USER_GUIDE.md.
-- `dist/RoboKin3D-v1.0.0-Windows-x64.zip` containing that complete directory.
+- `dist/RoboKin3D-v1.0.1-Windows-x64.zip` containing that complete directory.
 - `build/build-metrics.json` with build time, file count and sizes.
 
-The application uses windowed `onedir` mode, original multi-resolution ICO resources, and version 1.0.0 executable metadata. `RoboKin3D.spec` includes only the required Qt stylesheet and branding assets explicitly; PyInstaller's dependency hooks resolve imported Qt, NumPy, PyVista and VTK runtime libraries. Matplotlib uses the Agg backend for packaging, avoiding a separate GUI binding. PyQt and unrelated developer tooling are excluded. VTK's dynamically imported modules are listed explicitly following the [PyVista packaging guidance](https://docs.pyvista.org/extras/pyinstaller.html). The build does not collect all installed packages.
+The application uses windowed `onedir` mode, original multi-resolution ICO resources, and version 1.0.1 executable metadata. `RoboKin3D.spec` includes only the required Qt stylesheet and branding assets explicitly; PyInstaller's dependency hooks resolve imported Qt, NumPy, PyVista and VTK runtime libraries. Matplotlib uses the Agg backend for packaging, avoiding a separate GUI binding. PyQt and unrelated developer tooling are excluded. VTK's dynamically imported modules are listed explicitly following the [PyVista packaging guidance](https://docs.pyvista.org/extras/pyinstaller.html). The build does not collect all installed packages.
 
 Resources resolve relative to the installed package's `__file__`, including inside `_internal`, following [PyInstaller runtime guidance](https://pyinstaller.org/en/stable/runtime-information.html). `packaging/entrypoint.py` imports the existing production entrypoint; no test mode or development controls are shipped.
 

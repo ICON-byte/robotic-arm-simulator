@@ -1,8 +1,9 @@
 """Main workspace layout and viewport lifecycle."""
 
+from pathlib import Path
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QMainWindow, QPushButton,
-                              QScrollArea, QSplitter, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFrame, QHBoxLayout, QMainWindow, QPushButton,
+                              QScrollArea, QSplitter, QTextBrowser, QVBoxLayout, QWidget)
 from .controls import ControlSidebar, label
 from .results import ResultsPanel
 from .motion_controls import MotionControls
@@ -40,6 +41,13 @@ class MainWindow(QMainWindow):
         self.mode_status = label("FK · Joint controls", "muted")
         self.mode_status.setAccessibleName("Current control mode")
         header_layout.addWidget(self.mode_status)
+        help_button = QPushButton("Help")
+        help_button.setObjectName("helpButton")
+        help_button.setToolTip("Open the user guide")
+        help_button.setFlat(True)
+        help_button.setStyleSheet("QPushButton { color: #a8b8c7; background: transparent; border: none; font-size: 12px; padding: 4px 8px; }")
+        help_button.clicked.connect(self._show_help)
+        header_layout.addWidget(help_button)
         layout.addWidget(header)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         scroll = QScrollArea()
@@ -99,6 +107,30 @@ class MainWindow(QMainWindow):
         layout.addWidget(splitter, 1)
         self.statusBar().showMessage("Ready · 3-DOF arm loaded · Dimensions in millimetres")
         self.statusBar().setSizeGripEnabled(True)
+
+    def _show_help(self):
+        dialog = QDialog(self)
+        dialog.setObjectName("userGuideDialog")
+        dialog.setWindowTitle("RoboKin3D — User Guide")
+        dialog.resize(680, 560)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(20, 20, 20, 16)
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(False)
+        browser.setOpenLinks(False)
+        guide = Path(__file__).resolve().parents[3] / "USER_GUIDE.md"
+        text = guide.read_text(encoding="utf-8")
+        footer = '<small style="color: #a8b8c7;">Developed by ICON &amp; GAZA</small>'
+        browser.setMarkdown(text.removesuffix("\n").removesuffix(footer).rstrip())
+        layout.addWidget(browser)
+        credit = label("Developed by ICON & GAZA", "muted")
+        credit.setObjectName("developerCredit")
+        layout.addWidget(credit)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        dialog.exec()
+        dialog.deleteLater()
 
     def _set_joint_angles(self, angles):
         self.motion.apply_instant(angles)

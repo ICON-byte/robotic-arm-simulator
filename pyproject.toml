@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotic-arm-simulator"
-version = "1.0.0"
+version = "1.0.1"
 description = "RoboKin3D: a desktop robotic arm kinematics simulator"
 requires-python = ">=3.12,<3.13"
 dependencies = ["PySide6-Essentials", "pyvista", "pyvistaqt", "numpy>=2.0,<2.5", "vtk==9.5.2"]

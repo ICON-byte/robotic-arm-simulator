@@ -21,9 +21,9 @@ Developed for the university course project **Development of a Software Applicat
 
 Technologies: **Python 3.12**, **PySide6 Essentials** for desktop widgets, **PyVista/PyVistaQt and VTK** for 3D rendering, **NumPy** for mathematics, and **pytest** for verification. Windows builds use **PyInstaller**. No server, API, database, or SciPy is required.
 
-For Windows, download **RoboKin3D-v1.0.0-Windows-x64.zip** from the [v1.0.0 release](https://github.com/ICON-byte/robotic-arm-simulator/releases/tag/v1.0.0), extract the entire archive, open the `RoboKin3D` folder, and run `RoboKin3D.exe`. Keep its `_internal` folder alongside the executable. No Python installation is needed. See [BUILDING_WINDOWS.md](BUILDING_WINDOWS.md) and [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for build instructions, screenshots, diagnostics, and verification limits.
+For Windows, download **RoboKin3D-v1.0.1-Windows-x64.zip** from the [v1.0.1 release](https://github.com/ICON-byte/robotic-arm-simulator/releases/tag/v1.0.1), extract the entire archive, open the `RoboKin3D` folder, and run `RoboKin3D.exe`. Keep its `_internal` folder alongside the executable. No Python installation is needed. See [BUILDING_WINDOWS.md](BUILDING_WINDOWS.md) and [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for build instructions, screenshots, diagnostics, and verification limits.
 
-For a short classroom walkthrough, see [USER_GUIDE.md](USER_GUIDE.md).
+For a short classroom walkthrough, use the quiet **Help** text at the top-right of the application header, or see [USER_GUIDE.md](USER_GUIDE.md). The developer acknowledgement appears only at the bottom of the guide.
 
 ### Read this README
 
@@ -136,7 +136,7 @@ T_world_tool = Rz(b) @ Tz(h) @ Ry(-s) @ Tx(L1) @ Ry(-e) @ Tx(L2)
 
 ## Verification
 
-The latest complete verification on **4 November 2026** passed **169 tests with no warnings**. It includes independent mathematical references, deterministic motion timing, real Qt/VTK integration checks, and branding/startup lifecycle coverage. See [BRANDING_STARTUP_VERIFICATION.md](BRANDING_STARTUP_VERIFICATION.md) for the current results and [PHASE6_VERIFICATION.md](PHASE6_VERIFICATION.md) for earlier workspace evidence. This is a recorded local result, not a claim of hosted CI coverage.
+The latest complete verification on **18 November 2026** passed **170 tests with no warnings**. It includes independent mathematical references, deterministic motion timing, real Qt/VTK integration checks, and branding/startup lifecycle coverage. See [MAINTENANCE_V1.0.1_VERIFICATION.md](MAINTENANCE_V1.0.1_VERIFICATION.md) for the current results and [PHASE6_VERIFICATION.md](PHASE6_VERIFICATION.md) for earlier workspace evidence. This is a recorded local result, not a claim of hosted CI coverage.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip check

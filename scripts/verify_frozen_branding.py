@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--executable", type=Path, default=ROOT / "dist/RoboKin3D/RoboKin3D.exe")
 EXE = parser.parse_args().executable.resolve()
-OUTPUT = ROOT / ".impeccable/review/branding/frozen"
+OUTPUT = ROOT / ".tmp/v1.0.1-verification"
 OUTPUT.mkdir(parents=True, exist_ok=True)
 pe = pefile.PE(str(EXE))
 groups = [e for e in pe.DIRECTORY_ENTRY_RESOURCE.entries if e.id == 14]

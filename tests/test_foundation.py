@@ -14,6 +14,34 @@ from PySide6.QtWidgets import QApplication, QPushButton
 from robotic_arm_simulator.ui.main_window import MainWindow
 
 
+def test_header_help_opens_guide_with_discreet_credit(app, window):
+    from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QTextBrowser
+    help_button = window.findChild(QPushButton, "helpButton")
+    assert help_button is not None
+    assert help_button.parentWidget().objectName() == "header"
+    checked = []
+    def inspect():
+        dialog = window.findChild(QDialog, "userGuideDialog")
+        try:
+            assert dialog.isVisible()
+            text = dialog.findChild(QTextBrowser).toPlainText()
+            assert "Motion controls" in text and "Camera and keyboard" in text
+            credit = dialog.findChild(QLabel, "developerCredit")
+            assert credit.text() == "Developed by ICON & GAZA"
+            assert credit.property("role") == "muted"
+            assert "Developed by" not in text
+            if os.environ.get("SIMULATOR_CAPTURE_DIR"):
+                dialog.grab().save(os.path.join(os.environ["SIMULATOR_CAPTURE_DIR"], "help-dialog.png"))
+                window.grab().save(os.path.join(os.environ["SIMULATOR_CAPTURE_DIR"], "help-header.png"))
+            checked.append(True)
+        finally:
+            dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.StandardButton.Close).click()
+    QTimer.singleShot(100, inspect)
+    help_button.click()
+    assert checked and window.isVisible()
+
+
 @pytest.fixture(scope="module")
 def app():
     application = QApplication.instance() or QApplication([])

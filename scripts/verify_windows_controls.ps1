@@ -2,6 +2,7 @@ param([Parameter(Mandatory=$true)][int]$ApplicationProcessId)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
+Add-Type -AssemblyName System.Windows.Forms
 $scope = [System.Windows.Automation.TreeScope]::Descendants
 $condition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, $ApplicationProcessId)
 $window = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Children, $condition)
@@ -52,7 +53,23 @@ try {
     Invoke-Control 'Reset arm'
     Invoke-Control 'Load selected demonstration preset'
     Invoke-Control 'Reset view'
+    Invoke-Control 'Help'
+    $guide = $null
+    for ($attempt = 0; $attempt -lt 50 -and $null -eq $guide; $attempt++) {
+        $dialogs = @([System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children, $condition)) + @($window.FindAll($scope, $condition))
+        $guide = $dialogs | Where-Object { $_.Current.Name -like '*User Guide*' } | Select-Object -First 1
+        if ($null -eq $guide) { Start-Sleep -Milliseconds 100 }
+    }
+    if ($null -eq $guide) { throw ('Packaged Help guide did not open. Accessible names: ' + (($dialogs | ForEach-Object { $_.Current.Name }) -join ', ')) }
+    $creditCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'Developed by ICON & GAZA')
+    if ($null -eq $guide.FindFirst($scope, $creditCondition)) { throw 'Packaged guide credit missing' }
+    $guide.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
+    Write-Output 'PASS: packaged header Help, guide developer credit and dialog close'
     Write-Output 'PASS: packaged FK, sliders, matrix, IK, clipboard, motion transport, reset, preset load'
 } finally {
-    Set-Clipboard -Value ([string]$clipboardBefore)
+    if ([string]::IsNullOrEmpty($clipboardBefore)) {
+        [System.Windows.Forms.Clipboard]::Clear()
+    } else {
+        Set-Clipboard -Value $clipboardBefore
+    }
 }
